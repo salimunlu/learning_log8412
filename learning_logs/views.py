@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.shortcuts import render, redirect
 
 from .forms import TopicForm, EntryForm
@@ -13,7 +14,7 @@ def index(request):
 
 @login_required
 def topics(request):
-    topics = Topic.objects.all()
+    topics = Topic.objects.filter(owner=request.user)
     context = {'topics': topics}
     return render(request, 'learning_logs/topics.html', context)
 
@@ -21,6 +22,10 @@ def topics(request):
 def topic(request, topic_id):
     """Show the entries of a specific topic"""
     topic = Topic.objects.get(id=topic_id)
+
+    if topic.owner != request.user:
+        raise Http404
+
     entries = topic.entry_set.order_by('-date_added')
     context = {'topic': topic, 'entries': entries}
     return render(request, 'learning_logs/topic.html', context)
@@ -34,7 +39,9 @@ def new_topic(request):
     else:                         # POST verisi gönderildi, form dolduruldu, bu veriyi işle
         form = TopicForm(data=request.POST)
         if form.is_valid():
-            form.save()
+            new_topic = form.save(commit=False)
+            new_topic.owner = request.user
+            new_topic.save()
             return redirect('learning_logs:topics')
     context = {'form': form}
     return render(request, 'learning_logs/new_topic.html', context)
@@ -44,6 +51,9 @@ def new_topic(request):
 def new_entry(request, topic_id):
     """Add a new entry for a specific topic"""
     topic = Topic.objects.get(id=topic_id)
+
+    if topic.owner != request.user:
+        raise Http404
 
     if request.method != 'POST':
         form = EntryForm()
@@ -65,6 +75,9 @@ def edit_entry(request, entry_id):
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
 
+    if topic.owner != request.user:
+        raise Http404
+
     if request.method != 'POST':
         # İlk istek (request); formu mevcut girdiyle önceden doldurur.
         form = EntryForm(instance=entry)
@@ -76,3 +89,18 @@ def edit_entry(request, entry_id):
             return redirect('learning_logs:topic', topic_id=topic.id)
     context = {'entry': entry, 'topic': topic, 'form': form}
     return render(request, 'learning_logs/edit_entry.html', context)
+
+
+def delete_entry(request, entry_id):
+    """Delete an existing entry."""
+    entry = Entry.objects.get(id=entry_id)
+    topic = entry.topic
+    entry.delete()
+    return redirect('learning_logs:topic', topic_id=topic.id)
+
+
+def delete_topic(request, topic_id):
+    """Delete an existing topic"""
+    topic = Topic.objects.get(id=topic_id)
+    topic.delete()
+    return redirect('learning_logs:topics')

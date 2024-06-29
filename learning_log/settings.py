@@ -125,5 +125,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = 'registration:login'
-
+LOGIN_URL = 'users:login'

@@ -4,11 +4,16 @@
     
     {% if user.is_authenticated %}
         Hello, {{ user.username }}.
-        <a href="{% url 'registration:logout' %}">Log out</a>
+        <form id="logout_form" method="POST" action="{% url 'users:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="background:none; border:none; padding:0; color:#069; text-decoration:underline; cursor:pointer;">
+                Log out
+            </button>
+        </form>
     
     {% else %}
-        <a href="{% url 'registration:register' %}">Register</a>
-        <a href="{% url 'registration:login' %}">Log in</a>
+        <a href="{% url 'users:register' %}">Register</a> - 
+        <a href="{% url 'users:login' %}">Log in</a>
     {% endif %}
 </p>
 {% block content %}{% endblock content %}

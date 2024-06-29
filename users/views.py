@@ -4,19 +4,16 @@ from django.shortcuts import render, redirect
 
 
 # Create your views here.
+
 def register(request):
-    """Register a new user"""
-    if request.method != 'POST':   # Boş kayıt formu görüntüle
+    if request.method != 'POST':
         form = UserCreationForm()
-    else:    # Doldurulmuş formu işle
+    else:   # Doldurulan form işlenir
         form = UserCreationForm(data=request.POST)
 
         if form.is_valid():
             new_user = form.save()
-
             login(request, new_user)
             return redirect('learning_logs:index')
-
     context = {'form': form}
-
     return render(request, 'registration/register.html', context)
