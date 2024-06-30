@@ -2,12 +2,12 @@
 
 {% block content %}
     
-    <h2>Add a new topic:</h2>
+    <h3>Add a new topic:</h3>
     
     <form action="{% url 'learning_logs:new_topic' %}" method="post">
         {% csrf_token %}  {# çapraz site talep sahteciliği #}
         {{ form.as_p }}   {# formun düzgün olarak görüntilenmesi (form elemanları paragraf formatında) #} 
-        <button name="submit">Add topic</button>
+        <button name="submit" class="btn btn-secondary">Add topic</button>
     </form>
     
 {% endblock content %}
